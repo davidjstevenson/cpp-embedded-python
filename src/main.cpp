@@ -23,30 +23,21 @@ std::string get_string(PyObject* obj) {
     return std_str;
 }
 
-void python_main_from_file() {
-    FILE* fp = _Py_fopen(PYTHON_SCRIPT_FOLDER "main.py", "rb");
-    if (!fp) {
-        std::perror("File opening failed");
-        return;
-    }
-
+void python_main() {
     PyObject* main = PyImport_ImportModule("__main__");
     PyObject* globals = PyModule_GetDict(main);
     PyObject* locals = PyDict_New();
 
-    PyRun_File(fp, "main.py", Py_file_input, globals, locals);
+    PyRun_String("import main", Py_file_input, globals, locals);
 
     Py_DECREF(main);
     Py_DECREF(globals);
     Py_DECREF(locals);
-}
 
-void python_main_as_import() {
-    PyRun_SimpleString("import main");
-}
-
-void python_main() {
-    python_main_as_import();
+    PyObject* err = PyErr_Occurred();
+    if (err) {
+        PyErr_Print();
+    }
 }
 
 void print_python_version() {
