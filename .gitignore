@@ -1,0 +1,23 @@
+syntax:glob
+
+# general
+
+*.bak
+*.*~
+*.orig
+*.autosave
+*.log
+*.tmp
+
+# build artifacts
+
+build/
+
+# python
+
+*.__pycache__
+*.pyc
+
+# IDEs
+
+.vscode/
