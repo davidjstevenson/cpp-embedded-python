@@ -115,6 +115,20 @@ def make_zip(optimize=2):
             f.writelines(lines)
 
 
+def make_python():
+    path, _, extracted_folder, _ = get_embedded_paths()
+
+    files = [f for f in os.listdir(extracted_folder) if os.path.isfile(os.path.join(extracted_folder, f))]
+
+    embedded = os.path.join(path, "build")
+    if os.path.exists(embedded):
+        shutil.rmtree(embedded)
+    os.mkdir(embedded)
+
+    for f in files:
+        shutil.copy(os.path.join(extracted_folder, f), os.path.join(embedded, f))
+
+
 def main():
     if 'all' in sys.argv:
         extract_python_zip(force='--force' in sys.argv)
@@ -131,6 +145,10 @@ def main():
 
     if 'make_zip' in sys.argv:
         make_zip()
+        return
+
+    if 'make_python':
+        make_python()
         return
 
 

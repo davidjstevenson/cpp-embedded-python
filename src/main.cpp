@@ -31,7 +31,6 @@ void python_main() {
     PyRun_String("import main", Py_file_input, globals, locals);
 
     Py_DECREF(main);
-    Py_DECREF(globals);
     Py_DECREF(locals);
 
     PyObject* err = PyErr_Occurred();
