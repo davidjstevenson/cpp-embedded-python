@@ -1,3 +1,8 @@
+# See README.md for and explanation of this file
+#
+# Note this file is not indended to be robust method of creating an
+# embedded python folder.
+
 import sys
 import os
 import re
@@ -62,6 +67,9 @@ def install_pip():
 
     os.system(f"{os.path.join(extracted_folder, 'python.exe')} {get_pip_path}")
 
+    # in order for modules to be 'seen' by the embedded python, the 'python38._pth' (or equiv)
+    # needs to 'import site', alternatively you could manually add the site-packages folder
+    # to sys.path
     with open(os.path.join(extracted_folder, pth), "r") as f:
         lines = f.readlines()
         for i, line in enumerate(lines):
@@ -80,6 +88,7 @@ def make_zip(optimize=2):
     if os.path.exists(lib_zip_file):
         os.remove(lib_zip_file)
 
+    # as far as I can tell these are not required
     exclude = ["pip", "pkg_resources", "setuptools", "wheel", "__pycache__"]
     def include(file):
         if os.path.isfile(os.path.join(site_package, file)):
@@ -101,6 +110,10 @@ def make_zip(optimize=2):
     zip = zipfile.PyZipFile(lib_zip_file, "w", optimize=optimize)
     for f in folders:
         zip.writepy(os.path.join(site_package, f))
+
+        # the package 'certifi' requires a data file that 'zip.writepy' will not copy
+        # so do this manually. Note other packages may need similar treatment.
+        # TODO: is there a nice way to introspect data files from an install package?
         if f == "certifi":
             zip.write(os.path.join(os.path.join(site_package, f, "cacert.pem")), arcname="certifi/cacert.pem")
 
