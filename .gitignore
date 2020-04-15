@@ -15,6 +15,7 @@ build/
 
 # python
 
+embedded-python
 *.__pycache__
 *.pyc
 
