@@ -31,12 +31,12 @@ First, configure and generate a `Makefile` through `CMake`. You may need to adju
 ### Bootstrapping
 There is a python script `bootstrap.py` which documents the process of turning the embedded python zip file into a set of files that can be distributed with the compiled application.
 
-`bootstrap.py` is not intended to be a robust production ready script - rather to illustrate the steps required. Like the C++ code I have avoided any external dependencies such as `click` (my go to for argument parsing). The `main()` function is not good practice but its done like this for simplicity and demonstration purposes. These steps are as follows
+`bootstrap.py` is not intended to be a robust production ready script - rather to illustrate the steps required. Like the C++ code I have avoided any external dependencies such as `click` (my go to for argument parsing). These steps are as follows
 
 1. Extract the embedded python zip file
 2. Install pip
 3. Modify `python38._pth` (for Python 3.8.x) to include `import site`
-4. Install any pip modules that are required (not part of `bootstrap.py`)
+4. Install any pip modules that are required
 5. Create a zip file of the installed modules
 6. Copy of required files to a distributable folder
 
@@ -73,7 +73,10 @@ To use pip, you can run the pip executables from the `Scripts` folder or load th
 > embedded-python\python-3.8.1-embed-amd64\python.exe -m pip install requests
 ```
 
+`bootstrap.py` is setup to install all packages within `requirements.txt`
+
 #### 5. Create a zip file of the installed modules
+
 It would be possible (and may in some cases be required) to just distribute the whole `site-packages` folder with your application and add its path to the `sys.path` within the embedded python instance. However, its much cleaner to distribute these modules as a zip file in the same way as the embedded python instance ships its standard library (python38.zip). My understanding of this is that the contents of this zip file are not compressed (think a uncompressed tar archive of the Unix world) with a TOC such that files can be read directly from byte offsets making it equivalently fast as an distributed folder.
 
 In order to make such a file there is a class `PyZipFile` in the python `zipfile` module. Docs here: https://docs.python.org/3/library/zipfile.html

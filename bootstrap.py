@@ -82,6 +82,12 @@ def install_pip():
         f.writelines(lines)
 
 
+def install_modules():
+    _, _, extracted_folder, _ = get_embedded_paths()
+    requirements = os.path.join(DIR_PATH, 'src', 'python', 'requirements.txt')
+    os.system(f"{os.path.join(extracted_folder, 'python.exe')} -m pip install -r {requirements}")
+
+
 def make_zip(optimize=2):
     _, _, extracted_folder, pth = get_embedded_paths()
     site_package = os.path.join(extracted_folder, "Lib", "site-packages")
@@ -163,6 +169,9 @@ def main():
 
     if args.all or args.install_pip:
         install_pip()
+
+    if args.all or args.install_modules:
+        install_modules()
 
     if args.all or args.make_zip:
         make_zip()
