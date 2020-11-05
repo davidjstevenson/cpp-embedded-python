@@ -1,13 +1,15 @@
 # See README.md for and explanation of this file
 #
 # Note this file is not indended to be robust method of creating an
-# embedded python folder.
+# embedded python folder - rather it is an example of the steps that
+# need to be taken
 
 import sys
 import os
 import re
 import zipfile
 import shutil
+import argparse
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 EMBEDDED_ZIP_RE = re.compile(r"python-\d\.\d.\d-embed-.*\.zip")
@@ -143,26 +145,30 @@ def make_python():
 
 
 def main():
-    if 'all' in sys.argv:
-        extract_python_zip(force='--force' in sys.argv)
+    parser = argparse.ArgumentParser(description='Bootstrapping helper functions')
+    parser.add_argument('--all', action='store_true', help='do all the things')
+    parser.add_argument('--extract', action='store_true', help='extract the embedded python environment')
+    parser.add_argument('--install_pip', action='store_true', help='install pip into the embedded environment')
+    parser.add_argument('--install_modules', action='store_true', help='install python modules from requirements.txt')
+    parser.add_argument('--make_zip', action='store_true', help='make lib.zip')
+    parser.add_argument('--copy_files', action='store_true', help='copy files to the folder "embedded"')
+    parser.add_argument('--force', action='store_true', help='override files / folder if they already exist')
+
+    args = parser.parse_args()
+    if not any(vars(args).values()):
+        args.all = True
+
+    if args.all or args.extract:
+        extract_python_zip(args.force)
+
+    if args.all or args.install_pip:
         install_pip()
-        return
 
-    if 'extract' in sys.argv:
-        extract_python_zip(force='--force' in sys.argv)
-        return
-
-    if 'pip' in sys.argv:
-        install_pip()
-        return
-
-    if 'make_zip' in sys.argv:
+    if args.all or args.make_zip:
         make_zip()
-        return
 
-    if 'make_python':
+    if args.all or args.copy_files:
         make_python()
-        return
 
 
 if __name__ == "__main__":
