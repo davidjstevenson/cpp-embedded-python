@@ -123,7 +123,7 @@ def make_zip(optimize=2):
         # so do this manually. Note other packages may need similar treatment.
         # TODO: is there a nice way to introspect data files from an install package?
         if f == "certifi":
-            zip.write(os.path.join(os.path.join(site_package, f, "cacert.pem")), arcname="certifi/cacert.pem")
+            zip.write(os.path.join(site_package, f, "cacert.pem"), arcname="certifi/cacert.pem")
 
     zip.close()
 
@@ -136,7 +136,7 @@ def make_zip(optimize=2):
             f.writelines(lines)
 
 
-def make_python():
+def copy_files():
     path, _, extracted_folder, _ = get_embedded_paths()
 
     files = [f for f in os.listdir(extracted_folder) if os.path.isfile(os.path.join(extracted_folder, f))]
@@ -146,7 +146,7 @@ def make_python():
         shutil.rmtree(embedded)
     os.mkdir(embedded)
 
-    for f in files:
+    for f in filter(lambda x: not x.endswith('.exe'), files):
         shutil.copy(os.path.join(extracted_folder, f), os.path.join(embedded, f))
 
 
@@ -177,7 +177,7 @@ def main():
         make_zip()
 
     if args.all or args.copy_files:
-        make_python()
+        copy_files()
 
 
 if __name__ == "__main__":

@@ -30,12 +30,45 @@ std::string get_string(PyObject* obj) {
 /*
     python main runs the script located in src/python/main.py
 */
-void python_main() {
+void python(const std::string &filename) {
     PyObject_Owned main = PyImport_ImportModule("__main__");
     PyObject_Borrowed globals = PyModule_GetDict(*main);
     PyObject_Owned locals = PyDict_New();
 
-    PyRun_String("import main", Py_file_input, *globals, *locals);
+    std::string import_stmt = "import " + filename;
+    PyRun_String(import_stmt.c_str(), Py_file_input, *globals, *locals);
+
+    PyObject_Borrowed err = PyErr_Occurred();
+    if (*err) {
+        PyErr_Print();
+    }
+}
+
+/*
+    over the PyObject 'pobject' to a std::wstring
+*/
+std::wstring as_wstring(PyObject_Owned& pobject) {
+    assert(PyUnicode_Check(*pobject));
+
+    Py_ssize_t size;
+    wchar_t* tmp = PyUnicode_AsWideCharString(*pobject, &size);
+    std::wstring output = tmp;
+    PyMem_Free(tmp);
+    return output;
+}
+
+/*
+    download the json document at 'uri' and print it to stdout
+*/
+void download_json(const std::string& uri) {
+    PyObject_Owned module = PyImport_ImportModule("download");
+    PyObject_Borrowed globals = PyModule_GetDict(*module);
+    PyObject_Borrowed function = PyDict_GetItemString(*globals, "download");
+
+    PyObject_Owned args = PyTuple_Pack(1, PyUnicode_FromString(uri.c_str()));
+    PyObject_Owned result = PyObject_Call(*function, *args, nullptr);
+    std::wstring output = as_wstring(result);
+    std::wcout << output << "\n";
 
     PyObject_Borrowed err = PyErr_Occurred();
     if (*err) {
@@ -61,7 +94,7 @@ void print_python_version() {
 
     std::cout << "sys.version:     " << version_str << "\n";
     std::cout << "sys.base_prefix: " << base_prefix_str << "\n";
-    std::wcout << "sys.path:        " << path << L"\n";
+    std::wcout << "sys.path:       " << path << L"\n";
 
     std::cout << "==== ==================== ===\n\n";
 }
@@ -74,20 +107,23 @@ int main(int argc, char **argv) {
     /// directory nor the user's site-packages directory.
     Py_IsolatedFlag = 1;
 
-    // Disable the import of the module site and the site-dependent manipulations of
-    // sys.path that it entails. Also disable these manipulations if site is explicitly
-    // imported later (call site.main() if you want them to be triggered)
+    // Disable the import of the module siteand the site - dependent manipulations of sys.path that
+    // it entails.Also disable these manipulations if site is explicitly imported later(call site.main()
+    // if you want them to be triggered).
     Py_NoSiteFlag = 1;
 
+    // Ignore all PYTHON* environment variables, e.g. PYTHONPATH and PYTHONHOME, that might be set.
+    Py_IgnoreEnvironmentFlag = 1;
+
     // setup python
-    Py_Initialize();
+    Py_InitializeEx(0);
 
     python_setup_path();
     print_python_version();
-    python_main();
+
+    python("demo");
+    download_json("https://jsonplaceholder.typicode.com/todos/1");
 
     // teardown python
-    Py_Finalize();
-
-    return 0;
+    return Py_FinalizeEx();
 }

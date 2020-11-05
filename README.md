@@ -67,6 +67,8 @@ In order for the installed pip to be useable, the embedded python environment mu
 
 Note that the `python .\bootstrap.py pip` command from step 2 does this for you.
 
+Importing the `site` module is only required for pip and is probably undesirable in the final application. To reverse this, you can either modify the distributed `python38._pth` to remove the `import site` line or set `Py_NoSiteFlag = 1` before running `Py_InitializeEx(0);` - I would advise doing both.
+
 #### 4. Install any pip modules that are required
 To use pip, you can run the pip executables from the `Scripts` folder or load the pip module through the embedded python executable. For instance
 ```
